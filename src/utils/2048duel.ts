@@ -42,6 +42,12 @@ export function use2048Duel() {
         }
     })
 
+    watch(isStuck,()=>{
+        if(isStuck.value===true){
+            onDefeatHook.trigger()
+        }
+    })
+
     const checkIsStuck = (board: Board) => {
         const row_num = board.length
         const col_num = board[0].length
@@ -57,6 +63,7 @@ export function use2048Duel() {
                 if (j < col_num - 1 && board[i][j] && board[i][j + 1] && board[i][j]![0] === board[i][j + 1]![0]) {
                     return false
                 }
+                if(board[i][j]![0]>=64) return false
             }
         }
 
@@ -72,7 +79,7 @@ export function use2048Duel() {
             setRandomTile(board, status)
         } else {
             board[i][j] = [value, createId(), status]
-            // onFrozenHook.trigger(status)
+            if(status==='frozen') onFrozenHook.trigger(status)
         }
 
         if (checkIsStuck(board)) {

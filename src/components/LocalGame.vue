@@ -62,6 +62,8 @@ const canMove = computed(() => {
         return false
     }
 
+    if(game.localGame.isGameOver) return false
+
     return true
 })
 
@@ -182,7 +184,7 @@ onKeyStroke('f', () => {
         </transition>
 
         <HealthPointBar :hp="game.localGame.hp" :max="MAX_HP" :side="'left'" :enemy="false" style="margin-bottom: 5;"></HealthPointBar>
-        <Board :board="game.localGame.board" :score="game.localGame.score"></Board>
+        <Board :board="game.localGame.board" :score="game.localGame.score" style="position: absolute; bottom: 0px;"></Board>
     </div>
 </template>
 

@@ -13,6 +13,7 @@ if (gameId)
 
 
 <template>
+    <button @click="game.openMultiplayerGame">{{ '开始匹配' }}</button>
     <div class="containerGame">
         <div class="localGameContainer">
             <LocalGame />

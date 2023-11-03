@@ -37,7 +37,7 @@ const copyLink = () => {
 </script>
 
 <template>
-    <button @click="game.openMultiplayerGame">{{ '开始匹配' }}</button>
+    
     <div class="container-game">
         <HealthPointBar :hp="game.remoteGame.hp" :max="MAX_HP" :side="'left'" :enemy="true" style="margin-bottom: 5;"></HealthPointBar>
 

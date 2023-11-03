@@ -25,6 +25,6 @@ const props = defineProps<{
 .container-mask {
     width: 592px;
     height: 592px;
-    z-index: 1;
+    z-index: 100;
 }
 </style>
