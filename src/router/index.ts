@@ -9,6 +9,17 @@ const routes: Array<RouteRecordRaw> = [{
 }, {
     path: '/',
     component: () => import('../App.vue')
+}, {
+    path: '/local',
+    component: () => import('../components/LocalGame.vue')
+}
+, {
+    path: '/remote',
+    component: () => import('../components/RemoteGame.vue')
+}
+, {
+    path: '/battle',
+    component: () => import('../components/Battle.vue')
 }]
 
 const router = createRouter({

@@ -11,12 +11,12 @@ function timeUp(childrenMessage: boolean) {
 </script>
 
 <template>
-    <Timer :seconds="5" :stop="stop" @time-up="timeUp"></Timer>
+    <!-- <Timer :seconds="5" :stop="stop" @time-up="timeUp"></Timer>
     <button @click="stop = !stop" style="margin: 16px;">
         {{ stop ? 'start' : 'stop' }}
-    </button>
-    <div v-if="timeIsUp">Time is up!</div>
-    <!-- <RouterView></RouterView> -->
+    </button> -->
+    <!-- <div v-if="timeIsUp">Time is up!</div> -->
+    <RouterView></RouterView>
 
     <!-- <DuelGame></DuelGame> -->
 

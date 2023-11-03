@@ -172,6 +172,8 @@ export function use2048() {
         return max_num
     })
 
+
+
     const test = () => {
         board.value = [
             [[2, 1], [4, 2], [8, 3], [16, 4]],

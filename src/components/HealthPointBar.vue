@@ -3,17 +3,19 @@ const props = defineProps<{
     hp: number,
     max: number,
     side: 'left' | 'right',
+    enemy: boolean,
 }>()
 </script>
 
 <template>
     <div class="container-hp">
         <div :style="{
-            'background-color': `${(hp / max) > 0.2 ? '#2add9c' : '#dc3023'}`,
+            'background-color': `${(hp / max) > 0.2 ? (enemy?'#59b2df':'#2add9c') : '#dc3023'}`,
             'width': `${(hp < max ? (hp / max) : 1) * 560}px`,
             'height': '32px',
             'float': `${props.side}`,
         }"></div>
+        <div class="hp-text">{{ hp.toFixed(0) }} / {{ max }}</div>
 
         <div class="border"></div>
     </div>
@@ -25,6 +27,9 @@ const props = defineProps<{
     height: 32px;
     position: relative;
     margin: 16px;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
 }
 
 .border {
@@ -35,5 +40,12 @@ const props = defineProps<{
     position: absolute;
     top: -6px;
     left: -6px;
+}
+.hp-text {
+    text-align: center; /* 文字居中显示 */ 
+    top:1px;
+    position: absolute;
+    font-family: consolas;
+    font-size:x-large;
 }
 </style>

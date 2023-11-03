@@ -3,11 +3,11 @@ import { ref, watch, computed } from 'vue';
 import { isArrayEqual, deepClone, rotateMatrix, rotateCoordinate } from './array';
 import { Direction, direction2rotation } from './2048';
 import { triggerRow, triggerColumn, triggerBomb, triggerHeal } from './prop';
-
+import { createRandom } from './createRandom';
 let id = 0
 const createId = () => id += 1
 
-const MAX_HP = 4096
+export const MAX_HP = 4096
 
 export type Status = 'normal' | 'frozen' | 'row' | 'column' | 'bomb' | 'heal'
 type Tile = [number, number, Status] | null
@@ -16,7 +16,16 @@ export type Board = Tile[][]
 export function use2048Duel() {
     const onMoveHook = createEventHook<Direction>()
     const onWonHook = createEventHook<void>()
+    const onAttackHook = createEventHook<number>()
+    const onDefeatHook=createEventHook<void>()
+    const onSetpropHook=createEventHook<[number,number,Status]>()
+    const onHPchangeHook=createEventHook<number>()
+    const onDeleteHook=createEventHook<[number,number]>()
+    const onFrozenHook=createEventHook<Status>()
 
+    const seed=ref(Math.random())
+    let rand=createRandom(seed.value)
+    const damage=ref(0)
     const score = ref(0)
     const hp = ref(MAX_HP)
     const trigger_pos = ref([-1, -1])
@@ -25,6 +34,7 @@ export function use2048Duel() {
     const board = ref<Board>(Array.from({ length: rows.value }).map(() => Array.from({ length: cols.value }).map(() => null)))
     const hasWon = ref(false)
     const isStuck = ref(false)
+    const isGameOver= ref(false)
 
     watch(hasWon, () => {
         if (hasWon.value === true) {
@@ -54,14 +64,15 @@ export function use2048Duel() {
     }
 
     const setRandomTile = (board: Board, status: Status) => {
-        const value = Math.random() < 0.9 ? 2 : 4
-        const i = Math.floor(Math.random() * rows.value)
-        const j = Math.floor(Math.random() * cols.value)
+        const value = rand() < 0.9 ? 2 : 4
+        const i = rand(0, rows.value - 1)
+        const j =rand(0, cols.value - 1)
 
         if (board[i][j] !== null) {
             setRandomTile(board, status)
         } else {
             board[i][j] = [value, createId(), status]
+            // onFrozenHook.trigger(status)
         }
 
         if (checkIsStuck(board)) {
@@ -71,10 +82,15 @@ export function use2048Duel() {
         return board
     }
 
-    const initialize = () => {
+    const initialize = (_seed?:number) => {
         score.value = 0
         isStuck.value = false
         hasWon.value = false
+
+        if(_seed){
+            seed.value=_seed
+            rand=createRandom(_seed)
+        }
 
         let brd: Board = Array.from({ length: rows.value }).map(() => Array.from({ length: cols.value }).map(() => null))
         brd = setRandomTile(brd, 'normal')
@@ -98,6 +114,7 @@ export function use2048Duel() {
                 if (brd[i][j] !== null) {
                     temp.push(brd[i][j])
                     brd[i][j] = null
+
                 }
             }
 
@@ -125,6 +142,7 @@ export function use2048Duel() {
                     brd[pos][j] = [new_value, new_id, new_status]
                     k++
 
+                    damage.value+=new_value
                     score.value += new_value
                 } else {
                     brd[pos][j] = temp[k]
@@ -141,6 +159,8 @@ export function use2048Duel() {
 
         board.value = brd
 
+        onAttackHook.trigger(damage.value)
+        damage.value=0
         onMoveHook.trigger(direction)
     }
 
@@ -172,7 +192,12 @@ export function use2048Duel() {
     })
 
     const deleteTile = (i: number, j: number) => {
+        damage.value+=board.value[i][j]![0]
+        triggerTileProp([i,j])
         board.value[i][j] = null
+        onDeleteHook.trigger([i,j])
+        onAttackHook.trigger(damage.value)
+        damage.value=0
     }
 
     const setTileProp = (i: number, j: number, status: Status) => {
@@ -180,6 +205,7 @@ export function use2048Duel() {
             return
         }
         board.value[i][j]![2] = status
+        onSetpropHook.trigger([i,j,status])
     }
 
     const triggerTileProp = (pos: number[]) => {
@@ -188,6 +214,8 @@ export function use2048Duel() {
         const i = pos[0]
         const j = pos[1]
 
+        let _damage=0
+
         if (board.value[i][j] === null) {
             return
         }
@@ -195,23 +223,39 @@ export function use2048Duel() {
         
         switch (status) {
             case 'row':
-                board.value = triggerRow(i, j, board.value)
+                [_damage,board.value] = triggerRow(i, j, board.value)
                 break
             case 'column':
-                board.value = triggerColumn(i, j, board.value)
+                [_damage,board.value] = triggerColumn(i, j, board.value)
                 break
             case 'bomb':
-                board.value = triggerBomb(i, j, board.value)
+                [_damage,board.value] = triggerBomb(i, j, board.value)
                 break
             case 'heal':
-                hp.value = triggerHeal(i, j, board.value, hp.value)
+                setHP( triggerHeal(i, j, board.value, hp.value))
                 break
             default:
                 return
         }
 
+        damage.value+=_damage
         board.value[i][j]![2] = 'normal'
     }
+
+    const striked=(_damage:number)=>{
+        if(hp.value-_damage<=0) {
+            setHP(0)
+            isGameOver.value=true
+            onDefeatHook.trigger()
+        }
+        else setHP(hp.value-_damage)
+    }
+
+    const setHP=(_hp:number)=>{
+        hp.value=_hp
+        onHPchangeHook.trigger(hp.value)
+    }
+
 
     return {
         board,
@@ -219,6 +263,7 @@ export function use2048Duel() {
         hp,
         trigger_pos,
         isStuck,
+        isGameOver,
         hasWon,
         biggestTile,
         initialize,
@@ -231,8 +276,16 @@ export function use2048Duel() {
         down,
         left,
         right,
+        striked,
+        setHP,
         onWon: onWonHook.on,
         onMove: onMoveHook.on,
+        onAttack:onAttackHook.on,
+        onDefeat:onDefeatHook.on,
+        onSetprop:onSetpropHook.on,
+        onHPchange:onHPchangeHook.on,
+        onDelete:onDeleteHook.on,
+        onFrozen:onFrozenHook.on
     }
 }
 
