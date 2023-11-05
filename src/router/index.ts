@@ -20,6 +20,10 @@ const routes: Array<RouteRecordRaw> = [{
 , {
     path: '/battle',
     component: () => import('../components/Battle.vue')
+}
+, {
+    path: '/exp',
+    component: () => import('../components/exp2.vue')
 }]
 
 const router = createRouter({

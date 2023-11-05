@@ -15,7 +15,10 @@
     "clipboard": "^2.0.11",
     "peerjs": "^1.5.1",
     "pinia": "^2.1.7",
+    "three": "^0.158.0",
+    "vanta": "^0.5.24",
     "vue": "^3.3.4",
+    "vue-kinesis": "^2.0.5",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

@@ -62,7 +62,7 @@ const canMove = computed(() => {
         return false
     }
 
-    if(game.localGame.isGameOver) return false
+    if(game.localGame.isGameOver || game.remoteGame.hasWon || showWonState.value) return false
 
     return true
 })
@@ -165,8 +165,12 @@ onKeyStroke(' ', () => {
 })
 
 onKeyStroke('f', () => {
+
     game.remoteGame.board = game.remoteGame.setRandomTile(game.remoteGame.board, 'frozen')
+
 })
+
+
 </script>
 
 <template>
@@ -174,12 +178,14 @@ onKeyStroke('f', () => {
         <transition>
             <Mask v-if="showWonState" :color="'gold'" style="position: absolute; bottom: 0px;">
                 <p class="mask-text" style="position: relative; top: 140px;">你赢了</p>
+                <button @click="game.leaveMultiplayerGame" style="position: absolute; bottom: 200px;right:260px; z-index: 120;">{{ '离开' }}</button>
             </Mask>
         </transition>
 
         <transition>
-            <Mask v-if="game.localGame.isGameOver || game.remoteGame.hasWon" :color="'white'" style="position: absolute; bottom: 0px;">
+            <Mask v-if="game.localGame.isGameOver  || game.localGame.isStuck" :color="'white'" style="position: absolute; bottom: 0px;">
                 <p class="mask-text" style="position: relative; top: 180px;">你输了</p>
+                <button @click="game.leaveMultiplayerGame"  style="position: absolute; bottom: 200px;right:260px; z-index: 120;">{{ '离开' }}</button>
             </Mask>
         </transition>
 

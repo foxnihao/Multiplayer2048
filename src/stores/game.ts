@@ -1,5 +1,5 @@
 import type { Direction } from "../utils/2048"
-import { use2048Duel, type Status } from "../utils/2048duel"
+import { use2048Duel, type Status, MAX_HP } from "../utils/2048duel"
 import { defineStore } from 'pinia'
 import { usePeerStore } from './peer'
 import { computed, readonly, ref } from "vue"
@@ -37,6 +37,7 @@ export const useGameStore = defineStore('game', () => {
         const params = new URLSearchParams(window.location.search)
         params.delete('game')
         window.history.pushState({}, '', window.location.pathname)
+        localGame.initialize()
         remoteGame.initialize()
     }
 
@@ -48,11 +49,13 @@ export const useGameStore = defineStore('game', () => {
     const leaveMultiplayerGame = () => {
         peer.disconnect()
         closeMultiplayerGame()
+        startNewGame()
     }
 
     const startNewGame = (silent = false) => {
         const seed=Math.random()
         localGame.initialize(seed)
+        remoteGame.hp.value=MAX_HP
 
         if (isRemotePlayerConnected.value)
             peer.sendMessage('new-game', { seed,silent })
@@ -67,9 +70,7 @@ export const useGameStore = defineStore('game', () => {
         isRemotePlayerConnected.value = false
     })
 
-    peer.onDisconnected(() => {
-        isRemotePlayerConnected.value = false
-    })
+
 
     localGame.onMove((direction: Direction) => peer.sendMessage('move', { direction }))
     localGame.onSetprop(([i,j,status])=>peer.sendMessage('setStatus',{i,j,status}))
